@@ -68,9 +68,14 @@ public class CovidDataAndroidService extends Service {
             mNotifyManager.createNotificationChannel(notificationChannel);
         }
 
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
+
         Notification notification = new NotificationCompat.Builder(getApplicationContext(), "channel_id")
                 .setContentTitle("Continuously checking for Covid Count Updates")
                 .setSmallIcon(R.mipmap.covid_launcher_round)
+                .setContentIntent(pendingIntent)
                 .build();
         startForeground(1, notification);
 
@@ -141,7 +146,7 @@ public class CovidDataAndroidService extends Service {
                     logger.log(Level.SEVERE, "Failed to check for updates", e);
                 }
             }
-        }, 100, 600000);
+        }, 100, 300000);
     }
 
     private void stopTimer() {
