@@ -13,14 +13,14 @@ public class CovidData {
     }
 
     public static class Statewise {
-        public String active;
-        public String confirmed;
-        public String deaths;
-        public String deltaconfirmed;
-        public String deltadeaths;
-        public String deltarecovered;
+        public long active;
+        public long confirmed;
+        public long deaths;
+        public long deltaconfirmed;
+        public long deltadeaths;
+        public long deltarecovered;
         public String lastupdatedtime;
-        public String recovered;
+        public long recovered;
         public String state;
         public String statecode;
 //        public String statenotes;

@@ -19,6 +19,7 @@ import com.sagnik.covidnotifier.dagger.DaggerServiceDaggerComponent;
 import com.sagnik.covidnotifier.dagger.ServiceDaggerComponent;
 import com.sagnik.covidnotifier.models.Delta;
 import com.sagnik.covidnotifier.services.CovidDataService;
+import com.sagnik.covidnotifier.utils.Utils;
 
 import java.util.List;
 import java.util.Timer;
@@ -115,17 +116,17 @@ public class CovidDataAndroidService extends Service {
                         StringBuilder notificationText = new StringBuilder();
                         boolean prependPipe = false;
                         if (delta.confirmed != 0) {
-                            notificationText.append("Confirmed: " + delta.confirmed);
+                            notificationText.append("Confirmed: " + Utils.formatNumber(delta.confirmed, true));
                             prependPipe = true;
                         }
                         if (delta.deaths != 0) {
                             if (prependPipe) notificationText.append(" | ");
-                            notificationText.append("Deaths: " + delta.deaths);
+                            notificationText.append("Deaths: " + Utils.formatNumber(delta.deaths, true));
                             prependPipe = true;
                         }
                         if (delta.recovered != 0) {
                             if (prependPipe) notificationText.append(" | ");
-                            notificationText.append("Recovered: " + delta.recovered);
+                            notificationText.append("Recovered: " + Utils.formatNumber(delta.recovered, true));
                         }
 
                         // Create an explicit intent for an Activity in your app

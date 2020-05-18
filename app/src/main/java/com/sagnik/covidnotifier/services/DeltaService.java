@@ -31,9 +31,9 @@ public class DeltaService {
 
         Delta delta = new Delta();
         delta.state = newData.state;
-        delta.confirmed = Long.parseLong(newData.confirmed) - Long.parseLong(oldData.confirmed);
-        delta.deaths = Long.parseLong(newData.deaths) - Long.parseLong(oldData.deaths);
-        delta.recovered = Long.parseLong(newData.recovered) - Long.parseLong(oldData.recovered);
+        delta.confirmed = newData.confirmed - oldData.confirmed;
+        delta.deaths = newData.deaths - oldData.deaths;
+        delta.recovered = newData.recovered - oldData.recovered;
 
         if (delta.confirmed != 0 || delta.deaths != 0 || delta.recovered != 0) return Optional.of(delta);
         else return Optional.empty();

@@ -17,7 +17,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
-import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
 import com.google.android.flexbox.FlexWrap;
@@ -26,14 +25,13 @@ import com.google.android.material.card.MaterialCardView;
 import com.sagnik.covidnotifier.androidservices.CovidDataAndroidService;
 import com.sagnik.covidnotifier.loaders.DataLoader;
 import com.sagnik.covidnotifier.models.CovidData;
+import com.sagnik.covidnotifier.utils.Utils;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             logger.log(Level.SEVERE, "Exception while canelling worker task", e);
         }
 
+        addTextToScrollViewLayout("Loading Data...");
         LoaderManager.getInstance(this).restartLoader(LOAD_DATA, new Bundle(), this);
 
 //        WorkManager.getInstance(this).enqueue(new OneTimeWorkRequest.Builder(SimpleWorker.class)
@@ -80,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public void onLoadFinished(@NonNull Loader<Map<String, CovidData.Statewise>> loader, Map<String, CovidData.Statewise> data) {
-//        scrollViewLayout.removeAllViews();
+        scrollViewLayout.removeAllViews();
         if (data == null || data.size() == 0) {
             addTextToScrollViewLayout("Data unavailable");
             return;
@@ -90,27 +89,20 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         addStatewise(total, true);
         data.values().stream().filter(statewise -> !"Total".equals(statewise.state))
                 .sorted((a, b) -> {
-                    long aLong = Long.parseLong(a.active);
-                    long bLong = Long.parseLong(b.active);
-                    if (aLong > bLong) return -1;
-                    else if (aLong < bLong) return 1;
+                    if (a.active > b.active) return -1;
+                    else if (a.active < b.active) return 1;
                     else return 0;
                 }).forEach(statewise -> addStatewise(statewise, false));
     }
 
     private void addStatewise(CovidData.Statewise statewise, boolean special) {
         List<String> contents = new ArrayList<>();
-        contents.add("Active: "+formatNumber(statewise.active));
-        contents.add("Confirmed: "+formatNumber(statewise.confirmed) + (statewise.deltaconfirmed.contains("-") ? " (" : " (+") + formatNumber(statewise.deltaconfirmed)+")");
-        contents.add("Recovered: "+formatNumber(statewise.recovered) + (statewise.deltarecovered.contains("-") ? " (" : " (+") + formatNumber(statewise.deltarecovered)+")");
-        contents.add("Deceased: "+formatNumber(statewise.deaths) + (statewise.deltadeaths.contains("-") ? " (" : " (+") + formatNumber(statewise.deltadeaths)+")");
+        contents.add("Active: "+ Utils.formatNumber(statewise.active));
+        contents.add("Confirmed: "+ Utils.formatNumber(statewise.confirmed) + " (" + Utils.formatNumber(statewise.deltaconfirmed, true) + ")");
+        contents.add("Recovered: "+ Utils.formatNumber(statewise.recovered) + " (" + Utils.formatNumber(statewise.deltarecovered, true) + ")");
+        contents.add("Deceased: "+ Utils.formatNumber(statewise.deaths) + " (" + Utils.formatNumber(statewise.deltadeaths, true) + ")");
 
         addCard(statewise.state, contents, special);
-    }
-
-    private String formatNumber(String value){
-        DecimalFormat df = new DecimalFormat("##,##,##,##,##,##,##0");
-        return df.format(Long.parseLong(value));
     }
 
     private void addCard(String heading, Collection<String> otherContents, boolean special) {
