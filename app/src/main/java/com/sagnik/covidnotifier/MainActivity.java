@@ -1,8 +1,9 @@
 package com.sagnik.covidnotifier;
 
-import android.app.ActivityManager;
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.content.ContentResolver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Color;
@@ -22,7 +23,6 @@ import androidx.work.WorkManager;
 import com.google.android.flexbox.FlexWrap;
 import com.google.android.flexbox.FlexboxLayout;
 import com.google.android.material.card.MaterialCardView;
-import com.sagnik.covidnotifier.androidservices.CovidDataAndroidService;
 import com.sagnik.covidnotifier.loaders.DataLoader;
 import com.sagnik.covidnotifier.models.CovidData;
 import com.sagnik.covidnotifier.utils.Utils;
@@ -42,9 +42,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private LinearLayout scrollViewLayout;
 
+    Account mAccount;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mAccount = CreateSyncAccount(this);
+
+        getContentResolver().addPeriodicSync(mAccount, "com.sagnik.datasync.provider", Bundle.EMPTY, 300L);
+        ContentResolver.setMasterSyncAutomatically(true);
+        ContentResolver.setSyncAutomatically(mAccount, "com.sagnik.datasync.provider", true);
+
         setContentView(R.layout.activity_main);
         scrollViewLayout = findViewById(R.id.scroll_view_layout);
 
@@ -56,16 +64,40 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         addTextToScrollViewLayout("Loading Data...");
         LoaderManager.getInstance(this).restartLoader(LOAD_DATA, new Bundle(), this);
+    }
 
-//        WorkManager.getInstance(this).enqueue(new OneTimeWorkRequest.Builder(SimpleWorker.class)
-//                .addTag("covid-worker-task")
-//                .setInitialDelay(5, TimeUnit.SECONDS)
-//                .build());
-
-        if (!isMyServiceRunning(CovidDataAndroidService.class)) {
-            startForegroundService(new Intent(getApplicationContext(), CovidDataAndroidService.class));
+    /**
+     * Create a new dummy account for the sync adapter
+     *
+     * @param context The application context
+     */
+    public static Account CreateSyncAccount(Context context) {
+        // Create the account type and default account
+        Account newAccount = new Account(
+                "CovidNotifier", "sagnik.com");
+        // Get an instance of the Android account manager
+        AccountManager accountManager =
+                (AccountManager) context.getSystemService(
+                        ACCOUNT_SERVICE);
+        /*
+         * Add the account and account type, no password or user data
+         * If successful, return the Account object, otherwise report an error.
+         */
+        if (accountManager.addAccountExplicitly(newAccount, null, null)) {
+            /*
+             * If you don't set android:syncable="true" in
+             * in your <provider> element in the manifest,
+             * then call context.setIsSyncable(account, AUTHORITY, 1)
+             * here.
+             */
+        } else {
+            /*
+             * The account exists or some other error occurred. Log this, report it,
+             * or handle it internally.
+             */
         }
 
+        return newAccount;
     }
 
     @NonNull
@@ -98,9 +130,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private void addStatewise(CovidData.Statewise statewise, boolean special) {
         List<String> contents = new ArrayList<>();
         contents.add("Active: "+ Utils.formatNumber(statewise.active));
-        contents.add("Confirmed: "+ Utils.formatNumber(statewise.confirmed) + " (" + Utils.formatNumber(statewise.deltaconfirmed, true) + ")");
-        contents.add("Recovered: "+ Utils.formatNumber(statewise.recovered) + " (" + Utils.formatNumber(statewise.deltarecovered, true) + ")");
-        contents.add("Deceased: "+ Utils.formatNumber(statewise.deaths) + " (" + Utils.formatNumber(statewise.deltadeaths, true) + ")");
+        contents.add("Confirmed: "+ Utils.formatNumber(statewise.confirmed) + " ( " + Utils.formatNumber(statewise.deltaconfirmed, true) + ")");
+        contents.add("Recovered: "+ Utils.formatNumber(statewise.recovered) + " ( " + Utils.formatNumber(statewise.deltarecovered, true) + ")");
+        contents.add("Deceased: "+ Utils.formatNumber(statewise.deaths) + " ( " + Utils.formatNumber(statewise.deltadeaths, true) + ")");
 
         addCard(statewise.state, contents, special);
     }
@@ -170,15 +202,5 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         tv.setText(msg);
 
         scrollViewLayout.addView(tv);
-    }
-
-    private boolean isMyServiceRunning(Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                return true;
-            }
-        }
-        return false;
     }
 }
