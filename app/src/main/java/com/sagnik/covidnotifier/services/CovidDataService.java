@@ -43,13 +43,13 @@ public class CovidDataService {
         this.storageFileName = storageFileName;
     }
 
-    public synchronized List<Delta> checkForUpdates(Context context) {
+    public synchronized List<Delta> checkForUpdates(Context context) throws OldDataAbsentException {
         if (!cachedData.isPresent()) {
             cachedData = fetchOldData(context);
             if (!cachedData.isPresent()) {
                 cachedData = Optional.of(fetchLatestData());
                 storageService.writeToFile(context, storageFileName, new Gson().toJson(cachedData.get()));
-                return new ArrayList<>(0);
+                throw new OldDataAbsentException();
             }
         }
         Map<String, CovidData.Statewise> newData = fetchLatestData();
@@ -80,4 +80,6 @@ public class CovidDataService {
         Map<String, CovidData.Statewise> data = new Gson().fromJson(dataStr, new TypeToken<Map<String, CovidData.Statewise>>() {}.getType());
         return Optional.of(data);
     }
+
+    public static class OldDataAbsentException extends Exception {}
 }

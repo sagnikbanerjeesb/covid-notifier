@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Covid Notifier</string>
+    <string name="about_text_1"><![CDATA[Developed and Maintained by: Sagnik Bandyopadhyay <sagnikbanerjeesb@gmail.com>]]></string>
 </resources>

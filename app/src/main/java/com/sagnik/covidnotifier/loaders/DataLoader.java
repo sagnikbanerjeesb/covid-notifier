@@ -9,6 +9,7 @@ import androidx.loader.content.AsyncTaskLoader;
 import com.sagnik.covidnotifier.dagger.DaggerServiceDaggerComponent;
 import com.sagnik.covidnotifier.dagger.ServiceDaggerComponent;
 import com.sagnik.covidnotifier.models.CovidData;
+import com.sagnik.covidnotifier.services.CovidCountChangeNotificationService;
 import com.sagnik.covidnotifier.services.CovidDataService;
 
 import java.util.Map;
@@ -22,6 +23,9 @@ public class DataLoader extends AsyncTaskLoader<Map<String, CovidData.Statewise>
 
     @Inject
     CovidDataService covidDataService;
+
+    @Inject
+    CovidCountChangeNotificationService covidCountChangeNotificationService;
 
     public DataLoader(@NonNull Context context) {
         super(context);
@@ -39,11 +43,7 @@ public class DataLoader extends AsyncTaskLoader<Map<String, CovidData.Statewise>
     @Override
     public Map<String, CovidData.Statewise> loadInBackground() {
         try {
-            covidDataService.checkForUpdates(super.getContext());
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Exception while checking for updates during load", e);
-        }
-        try {
+            covidCountChangeNotificationService.notifyCovidCountChanges(super.getContext());
             return covidDataService.fetchCovidData();
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Exception while loading data in background", e);

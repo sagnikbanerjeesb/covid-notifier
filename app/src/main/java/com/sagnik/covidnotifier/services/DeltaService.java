@@ -25,7 +25,13 @@ public class DeltaService {
     }
 
     private Optional<Delta> delta(CovidData.Statewise oldData, CovidData.Statewise newData) {
-        if (newData.lastupdatedtime == oldData.lastupdatedtime) {
+        if (newData == null) return Optional.empty();
+        if (oldData == null) {
+            Delta delta = new Delta(newData.confirmed, newData.deaths, newData.recovered, newData.state);
+            return Optional.of(delta);
+        }
+
+        if (newData.lastupdatedtime.equals(oldData.lastupdatedtime)) {
             return Optional.empty();
         }
 

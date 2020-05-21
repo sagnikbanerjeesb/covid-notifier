@@ -1,9 +1,5 @@
 package com.sagnik.covidnotifier;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.content.ContentResolver;
-import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Color;
@@ -18,86 +14,43 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
-import androidx.work.WorkManager;
 
 import com.google.android.flexbox.FlexWrap;
 import com.google.android.flexbox.FlexboxLayout;
 import com.google.android.material.card.MaterialCardView;
+import com.sagnik.covidnotifier.dagger.DaggerServiceDaggerComponent;
 import com.sagnik.covidnotifier.loaders.DataLoader;
 import com.sagnik.covidnotifier.models.CovidData;
+import com.sagnik.covidnotifier.sync.SyncActivator;
 import com.sagnik.covidnotifier.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import javax.inject.Inject;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Map<String, CovidData.Statewise>> {
-    private Logger logger = Logger.getLogger(this.getClass().getName());
-
     private static final int LOAD_DATA = 0;
 
     private LinearLayout scrollViewLayout;
 
-    Account mAccount;
+    @Inject
+    SyncActivator syncActivator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mAccount = CreateSyncAccount(this);
+        DaggerServiceDaggerComponent.builder().build().inject(this);
 
-        getContentResolver().addPeriodicSync(mAccount, "com.sagnik.datasync.provider", Bundle.EMPTY, 300L);
-        ContentResolver.setMasterSyncAutomatically(true);
-        ContentResolver.setSyncAutomatically(mAccount, "com.sagnik.datasync.provider", true);
+        this.syncActivator.activate(this);
 
         setContentView(R.layout.activity_main);
         scrollViewLayout = findViewById(R.id.scroll_view_layout);
 
-        try {
-            WorkManager.getInstance(this).cancelAllWorkByTag("covid-worker-task").getResult().get();
-        } catch (ExecutionException | InterruptedException e) {
-            logger.log(Level.SEVERE, "Exception while canelling worker task", e);
-        }
-
         addTextToScrollViewLayout("Loading Data...");
         LoaderManager.getInstance(this).restartLoader(LOAD_DATA, new Bundle(), this);
-    }
-
-    /**
-     * Create a new dummy account for the sync adapter
-     *
-     * @param context The application context
-     */
-    public static Account CreateSyncAccount(Context context) {
-        // Create the account type and default account
-        Account newAccount = new Account(
-                "CovidNotifier", "sagnik.com");
-        // Get an instance of the Android account manager
-        AccountManager accountManager =
-                (AccountManager) context.getSystemService(
-                        ACCOUNT_SERVICE);
-        /*
-         * Add the account and account type, no password or user data
-         * If successful, return the Account object, otherwise report an error.
-         */
-        if (accountManager.addAccountExplicitly(newAccount, null, null)) {
-            /*
-             * If you don't set android:syncable="true" in
-             * in your <provider> element in the manifest,
-             * then call context.setIsSyncable(account, AUTHORITY, 1)
-             * here.
-             */
-        } else {
-            /*
-             * The account exists or some other error occurred. Log this, report it,
-             * or handle it internally.
-             */
-        }
-
-        return newAccount;
     }
 
     @NonNull
