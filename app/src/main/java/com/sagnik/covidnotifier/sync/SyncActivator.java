@@ -16,6 +16,7 @@ import javax.inject.Singleton;
 @Singleton
 public class SyncActivator {
     public static final String SYNC_UNIQUE_NAME = "covidnotifier-sync";
+    public static final int SYNC_INTERVAL = 15;
 
     @Inject
     public SyncActivator() {}
@@ -24,8 +25,8 @@ public class SyncActivator {
         Constraints constraints = new Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED).build();
         PeriodicWorkRequest periodicWorkRequest = new PeriodicWorkRequest
-                .Builder(SyncWorker.class, 15, TimeUnit.MINUTES)
-                .setInitialDelay(15, TimeUnit.MINUTES)
+                .Builder(SyncWorker.class, SYNC_INTERVAL, TimeUnit.MINUTES)
+                .setInitialDelay(SYNC_INTERVAL, TimeUnit.MINUTES)
                 .setConstraints(constraints).build();
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(SYNC_UNIQUE_NAME,
                 ExistingPeriodicWorkPolicy.REPLACE, periodicWorkRequest);

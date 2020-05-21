@@ -15,11 +15,11 @@ public class ConstantsModule {
     @Singleton
     @Named(COVID_HTTP_URL)
     public String covidHttpUrl() {
-        return "https://api.covid19india.org/data.json";
+        return "https://api.covid19india.org/data.json"; // todo is there a better way?
     }
 
     @Provides @Singleton @Named(STORAGE_FILE_NAME)
     public String storageFileName() {
         return "data.json";
-    }
+    } // todo is there a better way?
 }

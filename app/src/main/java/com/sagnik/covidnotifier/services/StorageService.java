@@ -11,7 +11,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class StorageService {
+    @Inject
+    public StorageService() {}
+
     private final Logger logger = Logger.getLogger(this.getClass().getName());
     public String readFromFile(Context context, String fileName) {
         FileInputStream fis = null;

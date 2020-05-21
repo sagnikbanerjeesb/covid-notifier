@@ -2,6 +2,7 @@ package com.sagnik.covidnotifier.services;
 
 import com.sagnik.covidnotifier.models.CovidData;
 import com.sagnik.covidnotifier.models.Delta;
+import com.sagnik.covidnotifier.utils.Consts;
 
 import java.util.List;
 import java.util.Map;
@@ -13,11 +14,12 @@ import javax.inject.Singleton;
 
 @Singleton
 public class DeltaService {
+
     @Inject
     public DeltaService() {}
 
     public List<Delta> getDelta(Map<String, CovidData.Statewise> oldData, Map<String, CovidData.Statewise> newData) {
-        return newData.values().parallelStream().filter(statewise -> !statewise.state.equals("Total"))
+        return newData.values().parallelStream().filter(statewise -> !statewise.state.equals(Consts.TOTAL_KEY))
                 .map(newStatewise -> delta(oldData.get(newStatewise.state), newStatewise))
                 .filter(deltaOptional -> deltaOptional.isPresent())
                 .map(deltaOptional -> deltaOptional.get())

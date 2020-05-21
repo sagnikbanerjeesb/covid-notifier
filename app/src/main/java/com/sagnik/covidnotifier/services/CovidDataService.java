@@ -7,7 +7,6 @@ import com.google.gson.reflect.TypeToken;
 import com.sagnik.covidnotifier.models.CovidData;
 import com.sagnik.covidnotifier.models.Delta;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;

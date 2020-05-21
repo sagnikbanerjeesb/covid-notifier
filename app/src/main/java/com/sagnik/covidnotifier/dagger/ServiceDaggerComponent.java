@@ -9,7 +9,7 @@ import javax.inject.Singleton;
 import dagger.Component;
 
 @Singleton
-@Component(modules = {ExternalServicesModule.class, ConstantsModule.class})
+@Component(modules = {ConstantsModule.class})
 public interface ServiceDaggerComponent {
     void inject(DataLoader dataLoader);
     void inject(SyncWorker syncWorker);

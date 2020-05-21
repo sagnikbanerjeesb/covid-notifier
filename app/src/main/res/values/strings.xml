@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Covid Notifier</string>
-    <string name="about_app">This is a simple app intended for learning purposes. It generates periodic notifications about changes in Covid Counts (confirmed, recovered, deceased).</string>
+    <string name="app_name">Covid Notifier India</string>
+    <string name="about_app">This is a simple app intended for learning purposes. It generates periodic notifications about changes in Covid Counts (confirmed, recovered, deceased). For detailed information on Covid statistics, please refer to: https://www.covid19india.org</string>
     <string name="about_developer">Created and maintained by: Sagnik Bandyopadhyay (sagnikbanerjeesb@gmail.com)</string>
 </resources>

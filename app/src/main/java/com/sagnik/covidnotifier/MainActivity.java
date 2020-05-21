@@ -26,6 +26,7 @@ import com.sagnik.covidnotifier.dagger.DaggerServiceDaggerComponent;
 import com.sagnik.covidnotifier.loaders.DataLoader;
 import com.sagnik.covidnotifier.models.CovidData;
 import com.sagnik.covidnotifier.sync.SyncActivator;
+import com.sagnik.covidnotifier.utils.Consts;
 import com.sagnik.covidnotifier.utils.Utils;
 
 import java.util.ArrayList;
@@ -35,8 +36,18 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import static com.sagnik.covidnotifier.utils.Consts.CONFIRMED_TXT;
+import static com.sagnik.covidnotifier.utils.Consts.DECEASED_TXT;
+import static com.sagnik.covidnotifier.utils.Consts.RECOVERED_TXT;
+import static com.sagnik.covidnotifier.utils.Consts.TOTAL_KEY;
+
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Map<String, CovidData.Statewise>> {
     private static final int LOAD_DATA = 0;
+    public static final String DELTA_PREFIX = " ( ";
+    public static final String DELTA_SUFFIX = ")";
+    public static final int DEFAULT_MARGIN_ELEVATION_DP = 10;
+    public static final String TOTAL_CARD_COLOR = "#fffaf5";
+    public static final String DEFAULT_CARD_COLOR = "#f5f9ff";
 
     private LinearLayout scrollViewLayout;
 
@@ -72,10 +83,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 startActivity(intent);
                 return true;
             default:
-                // If we got here, the user's action was not recognized.
-                // Invoke the superclass to handle it.
                 return super.onOptionsItemSelected(item);
-
         }
     }
 
@@ -95,23 +103,23 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             addTextToScrollViewLayout("Data unavailable");
             return;
         }
-        CovidData.Statewise total = data.get("Total");
+        CovidData.Statewise total = data.get(TOTAL_KEY);
 
         addStatewise(total, true);
-        data.values().stream().filter(statewise -> !"Total".equals(statewise.state))
+        data.values().stream().filter(statewise -> !TOTAL_KEY.equals(statewise.state))
                 .sorted((a, b) -> {
                     if (a.active > b.active) return -1;
                     else if (a.active < b.active) return 1;
                     else return 0;
-                }).forEach(statewise -> addStatewise(statewise, false));
+                }).forEach(statewise -> addStatewise(statewise, false)); // todo move sorting logic to a separate class
     }
 
     private void addStatewise(CovidData.Statewise statewise, boolean special) {
         List<String> contents = new ArrayList<>();
-        contents.add("Active: "+ Utils.formatNumber(statewise.active));
-        contents.add("Confirmed: "+ Utils.formatNumber(statewise.confirmed) + " ( " + Utils.formatNumber(statewise.deltaconfirmed, true) + ")");
-        contents.add("Recovered: "+ Utils.formatNumber(statewise.recovered) + " ( " + Utils.formatNumber(statewise.deltarecovered, true) + ")");
-        contents.add("Deceased: "+ Utils.formatNumber(statewise.deaths) + " ( " + Utils.formatNumber(statewise.deltadeaths, true) + ")");
+        contents.add(Consts.ACTIVE_TXT + Utils.formatNumber(statewise.active));
+        contents.add(CONFIRMED_TXT + Utils.formatNumber(statewise.confirmed) + DELTA_PREFIX + Utils.formatNumber(statewise.deltaconfirmed, true) + DELTA_SUFFIX);
+        contents.add(RECOVERED_TXT + Utils.formatNumber(statewise.recovered) + DELTA_PREFIX + Utils.formatNumber(statewise.deltarecovered, true) + DELTA_SUFFIX);
+        contents.add(DECEASED_TXT + Utils.formatNumber(statewise.deaths) + DELTA_PREFIX + Utils.formatNumber(statewise.deltadeaths, true) + DELTA_SUFFIX);
 
         addCard(statewise.state, contents, special);
     }
@@ -119,26 +127,26 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private void addCard(String heading, Collection<String> otherContents, boolean special) {
         final float scale = this.getResources().getDisplayMetrics().density;
 
-        int dp10InPx = (int) (10 * scale);
+        int defaultMarginElevationPx = (int) (DEFAULT_MARGIN_ELEVATION_DP * scale);
 
         MaterialCardView materialCardView = new MaterialCardView(this);
         if (special) {
-            materialCardView.setCardBackgroundColor(Color.parseColor("#fffaf5"));
+            materialCardView.setCardBackgroundColor(Color.parseColor(TOTAL_CARD_COLOR));
         } else {
-            materialCardView.setCardBackgroundColor(Color.parseColor("#f5f9ff"));
+            materialCardView.setCardBackgroundColor(Color.parseColor(DEFAULT_CARD_COLOR));
         }
-        ViewGroup.MarginLayoutParams layoutParams = new ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        layoutParams.setMargins(dp10InPx, dp10InPx, dp10InPx, dp10InPx);
-        materialCardView.setLayoutParams(layoutParams);
-        materialCardView.setCardElevation(dp10InPx);
+        ViewGroup.MarginLayoutParams cardLayout = new ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        cardLayout.setMargins(defaultMarginElevationPx, defaultMarginElevationPx, defaultMarginElevationPx, defaultMarginElevationPx);
+        materialCardView.setLayoutParams(cardLayout);
+        materialCardView.setCardElevation(defaultMarginElevationPx);
 
         FlexboxLayout flexboxLayout = new FlexboxLayout(this);
-        flexboxLayout.setLayoutParams(layoutParams);
+        flexboxLayout.setLayoutParams(cardLayout);
         flexboxLayout.setFlexWrap(FlexWrap.WRAP);
 
         TextView textView = new TextView(this);
-        ViewGroup.MarginLayoutParams layoutParams2 = new ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        textView.setLayoutParams(layoutParams2);
+        ViewGroup.MarginLayoutParams headerLayout = new ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        textView.setLayoutParams(headerLayout);
         textView.setText(heading);
         TypedValue textAppearanceHeadline6 = new TypedValue();
         getTheme().resolveAttribute(R.attr.textAppearanceHeadline6, textAppearanceHeadline6, true);
@@ -146,22 +154,22 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         flexboxLayout.addView(textView);
 
         otherContents.forEach(text -> {
-            TextView textView2 = new TextView(this);
-            ViewGroup.MarginLayoutParams layoutParams3 = new ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            layoutParams3.setMargins(0, (int) (8 * scale), (int) (12 * scale), 0);
-            textView2.setLayoutParams(layoutParams3);
-            textView2.setText(text);
+            TextView otherContentText = new TextView(this);
+            ViewGroup.MarginLayoutParams otherContentLayout = new ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            otherContentLayout.setMargins(0, (int) (8 * scale), (int) (12 * scale), 0);
+            otherContentText.setLayoutParams(otherContentLayout);
+            otherContentText.setText(text);
             TypedValue textAppearanceBody2 = new TypedValue();
             getTheme().resolveAttribute(R.attr.textAppearanceBody2, textAppearanceBody2, true);
-            textView2.setTextAppearance(textAppearanceBody2.data);
+            otherContentText.setTextAppearance(textAppearanceBody2.data);
 
-            TypedArray a = obtainStyledAttributes(new int[] { android.R.attr.textColorSecondary });
-            ColorStateList color = a.getColorStateList(a.getIndex(0));
-            a.recycle();
+            TypedArray textColorSecondaryAttributes = obtainStyledAttributes(new int[]{android.R.attr.textColorSecondary});
+            ColorStateList color = textColorSecondaryAttributes.getColorStateList(textColorSecondaryAttributes.getIndex(0));
+            textColorSecondaryAttributes.recycle();
 
-            textView2.setTextColor(color);
+            otherContentText.setTextColor(color);
 
-            flexboxLayout.addView(textView2);
+            flexboxLayout.addView(otherContentText);
         });
 
         materialCardView.addView(flexboxLayout);

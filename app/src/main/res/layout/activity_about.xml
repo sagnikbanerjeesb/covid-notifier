@@ -12,6 +12,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:autoLink="web"
+        android:clickable="true"
         android:text="@string/about_app"
         android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"

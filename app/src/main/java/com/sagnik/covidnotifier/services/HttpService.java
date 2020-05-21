@@ -5,7 +5,14 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class HttpService {
+    @Inject
+    public HttpService() {}
+
     public String get(String urlString) {
         URL url = null;
         try {
