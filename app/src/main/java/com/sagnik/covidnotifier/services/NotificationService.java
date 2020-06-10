@@ -63,4 +63,13 @@ public class NotificationService {
                 .build();
         notificationManager.notify(id, notification);
     }
+
+    public Notification buildNotificationForForegroundSvc(Context context, String title) {
+        register(context);
+
+        return new NotificationCompat.Builder(context, CHANNEL_ID)
+                .setContentTitle(title)
+                .setSmallIcon(R.mipmap.covid_launcher_round)
+                .build();
+    }
 }

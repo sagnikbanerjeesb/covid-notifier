@@ -1,5 +1,7 @@
 package com.sagnik.covidnotifier.sync;
 
+import android.content.Intent;
+import android.os.Build;
 import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -7,6 +9,7 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.sagnik.covidnotifier.dagger.DaggerServiceDaggerComponent;
 import com.sagnik.covidnotifier.services.NotificationService;
+import com.sagnik.covidnotifier.services.registeredServices.DummyForegroundService;
 
 import javax.inject.Inject;
 
@@ -26,10 +29,16 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         if (remoteMessage.getData().size() > 0) {
             Log.i(TAG, "Message data payload: " + remoteMessage.getData());
             Log.i(TAG, "Message priority: "+remoteMessage.getPriority());
-            notificationService.notify(getApplicationContext(), "Push Notification", remoteMessage.getData().get("txt"), (int)(System.currentTimeMillis()/1000));
         }
         if (remoteMessage.getNotification() != null) {
             Log.i(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
+        }
+
+        Intent foregroundSvcIntent = new Intent(this, DummyForegroundService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(foregroundSvcIntent);
+        } else {
+            startService(foregroundSvcIntent);
         }
     }
 
