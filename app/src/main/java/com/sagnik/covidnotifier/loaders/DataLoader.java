@@ -6,8 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.loader.content.AsyncTaskLoader;
 
-import com.sagnik.covidnotifier.dagger.DaggerServiceDaggerComponent;
-import com.sagnik.covidnotifier.dagger.ServiceDaggerComponent;
+import com.sagnik.covidnotifier.App;
 import com.sagnik.covidnotifier.models.CovidData;
 import com.sagnik.covidnotifier.services.CovidCountChangeNotificationService;
 import com.sagnik.covidnotifier.services.CovidDataService;
@@ -29,8 +28,7 @@ public class DataLoader extends AsyncTaskLoader<Map<String, CovidData.Statewise>
 
     public DataLoader(@NonNull Context context) {
         super(context);
-        ServiceDaggerComponent serviceDaggerComponent = DaggerServiceDaggerComponent.builder().build();
-        serviceDaggerComponent.inject(this);
+        ((App) context.getApplicationContext()).serviceDaggerComponent.inject(this);
     }
 
     @Override

@@ -22,7 +22,6 @@ import androidx.loader.content.Loader;
 import com.google.android.flexbox.FlexWrap;
 import com.google.android.flexbox.FlexboxLayout;
 import com.google.android.material.card.MaterialCardView;
-import com.sagnik.covidnotifier.dagger.DaggerServiceDaggerComponent;
 import com.sagnik.covidnotifier.loaders.DataLoader;
 import com.sagnik.covidnotifier.models.CovidData;
 import com.sagnik.covidnotifier.sync.SyncActivator;
@@ -57,7 +56,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        DaggerServiceDaggerComponent.builder().build().inject(this);
+
+        ((App) getApplicationContext()).serviceDaggerComponent.inject(this);
 
         this.syncActivator.activate(this);
 
