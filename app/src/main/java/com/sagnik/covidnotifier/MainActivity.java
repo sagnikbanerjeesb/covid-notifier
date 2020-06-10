@@ -125,6 +125,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void addCard(String heading, Collection<String> otherContents, boolean special) {
+        // todo refactor
+
         final float scale = this.getResources().getDisplayMetrics().density;
 
         int defaultMarginElevationPx = (int) (DEFAULT_MARGIN_ELEVATION_DP * scale);
