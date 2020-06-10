@@ -1,6 +1,7 @@
 package com.sagnik.covidnotifier.services;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.sagnik.covidnotifier.models.Delta;
 import com.sagnik.covidnotifier.utils.Consts;

@@ -16,6 +16,7 @@ public class ConstantsModule {
     @Named(COVID_HTTP_URL)
     public String covidHttpUrl() {
         return "https://api.covid19india.org/data.json"; // todo is there a better way?
+//        return "http://192.168.29.175:8080/covidMock";
     }
 
     @Provides @Singleton @Named(STORAGE_FILE_NAME)

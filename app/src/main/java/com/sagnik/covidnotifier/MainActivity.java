@@ -1,10 +1,13 @@
 package com.sagnik.covidnotifier;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -25,6 +28,7 @@ import com.google.android.material.card.MaterialCardView;
 import com.sagnik.covidnotifier.dagger.DaggerServiceDaggerComponent;
 import com.sagnik.covidnotifier.loaders.DataLoader;
 import com.sagnik.covidnotifier.models.CovidData;
+import com.sagnik.covidnotifier.sync.MyAlarm;
 import com.sagnik.covidnotifier.sync.SyncActivator;
 import com.sagnik.covidnotifier.utils.Consts;
 import com.sagnik.covidnotifier.utils.Utils;
@@ -63,6 +67,16 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         setContentView(R.layout.activity_main);
         scrollViewLayout = findViewById(R.id.scroll_view_layout);
+
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        Intent intent = new Intent(this, MyAlarm.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        PendingIntent pendingIntentActivity = PendingIntent.getActivity(this, 2, new Intent(this, MainActivity.class), PendingIntent.FLAG_CANCEL_CURRENT);
+        alarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(System.currentTimeMillis() + 5*60*1000, pendingIntentActivity), pendingIntent);
+
+//        alarmManager.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 3000, pendingIntent); // doesn't work reliably
+
+//        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()+3000, 30000, pendingIntent); // doesn't work reliably
 
         addTextToScrollViewLayout("Loading Data...");
         LoaderManager.getInstance(this).restartLoader(LOAD_DATA, new Bundle(), this);
@@ -125,6 +139,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void addCard(String heading, Collection<String> otherContents, boolean special) {
+        // todo refactor
+
         final float scale = this.getResources().getDisplayMetrics().density;
 
         int defaultMarginElevationPx = (int) (DEFAULT_MARGIN_ELEVATION_DP * scale);
