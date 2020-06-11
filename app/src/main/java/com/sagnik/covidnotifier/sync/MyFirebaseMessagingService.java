@@ -15,6 +15,7 @@ import javax.inject.Inject;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private static final String TAG = "MyFirebaseMessagingService";
+
     @Inject
     NotificationService notificationService;
 
@@ -26,19 +27,21 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     public void onMessageReceived(RemoteMessage remoteMessage) {
         Log.i(TAG, "From: " + remoteMessage.getFrom());
 
-        if (remoteMessage.getData().size() > 0) {
+        if (remoteMessage.getData() != null && remoteMessage.getData().size() > 0) {
             Log.i(TAG, "Message data payload: " + remoteMessage.getData());
             Log.i(TAG, "Message priority: "+remoteMessage.getPriority());
         }
+
         if (remoteMessage.getNotification() != null) {
             Log.i(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
-        }
-
-        Intent foregroundSvcIntent = new Intent(this, DummyForegroundService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(foregroundSvcIntent);
+            notificationService.notify(this, remoteMessage.getNotification().getTitle(), remoteMessage.getNotification().getBody(), (int)(System.currentTimeMillis()/1000));
         } else {
-            startService(foregroundSvcIntent);
+            Intent foregroundSvcIntent = new Intent(this, DummyForegroundService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(foregroundSvcIntent);
+            } else {
+                startService(foregroundSvcIntent);
+            }
         }
     }
 
